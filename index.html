@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RachaPix - Divisão de Despesas Simples</title>
+    <!-- Tailwind CSS para design moderno e responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js para reatividade leve e sem complicação -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-p-4">
+
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-xl flex flex-col justify-between" x-data="rachaApp()">
+        
+        <!-- Header -->
+        <header class="bg-emerald-600 text-white p-6 shadow-md">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-receipt"></i> RachaPix
+                </h1>
+                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">MVP 1.0</span>
+            </div>
+            <p class="text-emerald-100 text-sm mt-1">Divida contas de churrascos e viagens sem enrolação.</p>
+        </header>
+
+        <!-- Conteúdo Principal -->
+        <main class="p-5 flex-1 space-y-6">
+
+            <!-- Passo 1: Dados do Evento -->
+            <section class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                <h2 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">1. Dados do Evento</h2>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nome do Evento / Viagem</label>
+                    <input type="text" x-model="eventName" placeholder="Ex: Churrasco de Sábado" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Chave Pix Principal (Organizador)</label>
+                    <input type="text" x-model="organizerPix" placeholder="CPF, E-mail, Celular ou Chave Aleatória" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+            </section>
+
+            <!-- Passo 2: Participantes -->
+            <section class="space-y-3">
+                <h2 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">2. Participantes (<span x-text="participants.length"></span>)</h2>
+                <div class="flex gap-2">
+                    <input type="text" x-model="newParticipant" @keyup.enter="addParticipant" placeholder="Nome do participante" class="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <button @click="addParticipant" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition">Adicionar</button>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <template x-for="(p, index) in participants" :key="index">
+                        <span class="bg-emerald-50 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-2 border border-emerald-200">
+                            <span x-text="p"></span>
+                            <button @click="removeParticipant(index)" class="text-emerald-600 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button>
+                        </span>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Passo 3: Lançar Despesas -->
+            <section class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <h2 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">3. Lançar Gastos</h2>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Descrição do Gasto</label>
+                    <input type="text" x-model="expenseDesc" placeholder="Ex: Carne e Carvão no Supermercado" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Valor (R$)</label>
+                        <input type="number" step="0.01" x-model.number="expenseAmount" placeholder="0,00" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Quem pagou?</label>
+                        <select x-model="expensePayer" class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">Selecione...</option>
+                            <template x-for="p in participants">
+                                <option :value="p" x-text="p"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+                <button @click="addExpense" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition shadow-sm">
+                    Adicionar Despesa
+                </button>
+            </section>
+
+            <!-- Lista de Despesas Lançadas -->
+            <section class="space-y-2" x-show="expenses.length > 0">
+                <h2 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">Extrato de Gastos</h2>
+                <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <template x-for="(exp, index) in expenses" :key="index">
+                        <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-100 shadow-xs text-sm">
+                            <div>
+                                <p class="font-medium text-slate-800" x-text="exp.desc"></p>
+                                <p class="text-xs text-slate-500">Pago por <span class="font-semibold text-emerald-600" x-text="exp.payer"></span></p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="font-bold text-slate-700">R$ <span x-text="exp.amount.toFixed(2)"></span></span>
+                                <button @click="removeExpense(index)" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Passo 4: Acerto de Contas (Resultado) -->
+            <section class="space-y-3 pt-2 border-t border-slate-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-bold text-slate-800 text-base">4. Acerto via Pix</h2>
+                    <button @click="calculateDebts" class="bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-slate-800 transition">Calcular Divisão</button>
+                </div>
+
+                <div class="space-y-3">
+                    <template x-for="debt in calculatedDebts">
+                        <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex flex-col gap-2">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-slate-700"><strong x-text="debt.from"></strong> deve para <strong x-text="debt.to"></strong></span>
+                                <span class="font-bold text-emerald-700 text-base">R$ <span x-text="debt.amount.toFixed(2)"></span></span>
+                            </div>
+                            <button @click="copyPixInfo(debt.amount, debt.to)" class="w-full bg-emerald-600 text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-qrcode"></i> Copiar Chave Pix e Valor para Pagamento
+                            </button>
+                        </div>
+                    </template>
+                    <div x-show="calculatedDebts.length === 0 && expenses.length > 0" class="text-center text-xs text-slate-400 py-2">
+                        Clique em "Calcular Divisão" para gerar os acertos.
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-slate-100 text-center py-3 text-xs text-slate-500 border-t border-slate-200">
+            RachaPix — Desenvolvido com foco em velocidade e simplicidade.
+        </footer>
+
+    </div>
+
+    <!-- Lógica JavaScript com Alpine.js -->
+    <script>
+        function rachaApp() {
+            return {
+                eventName: '',
+                organizerPix: '',
+                newParticipant: '',
+                participants: ['Thiago', 'Juliana', 'Carlos'],
+                newExpenseDesc: '',
+                expenseDesc: '',
+                expenseAmount: '',
+                expensePayer: '',
+                expenses: [
+                    { desc: 'Carne e linguiça', amount: 180.00, payer: 'Thiago' },
+                    { desc: 'Bebidas e gelo', amount: 120.00, payer: 'Juliana' }
+                ],
+                calculatedDebts: [],
+
+                addParticipant() {
+                    if (this.newParticipant.trim() && !this.participants.includes(this.newParticipant.trim())) {
+                        this.participants.push(this.newParticipant.trim());
+                        this.newParticipant = '';
+                    }
+                },
+
+                removeParticipant(index) {
+                    this.participants.splice(index, 1);
+                },
+
+                addExpense() {
+                    if (this.expenseDesc && this.expenseAmount > 0 && this.expensePayer) {
+                        this.expenses.push({
+                            desc: this.expenseDesc,
+                            amount: parseFloat(this.expenseAmount),
+                            payer: this.expensePayer
+                        });
+                        this.expenseDesc = '';
+                        this.expenseAmount = '';
+                        this.expensePayer = '';
+                        this.calculateDebts();
+                    }
+                },
+
+                removeExpense(index) {
+                    this.expenses.splice(index, 1);
+                    this.calculateDebts();
+                },
+
+                calculateDebts() {
+                    if (this.participants.length === 0 || this.expenses.length === 0) {
+                        this.calculatedDebts = [];
+                        return;
+                    }
+
+                    let balances = {};
+                    this.participants.forEach(p => balances[p] = 0);
+
+                    let totalSpent = 0;
+                    this.expenses.forEach(exp => {
+                        totalSpent += exp.amount;
+                        balances[exp.payer] += exp.amount;
+                    });
+
+                    let sharePerPerson = totalSpent / this.participants.length;
+
+                    this.participants.forEach(p => {
+                        balances[p] -= sharePerPerson;
+                    });
+
+                    let debtors = [];
+                    let creditors = [];
+
+                    for (let p in balances) {
+                        let bal = Math.round(balances[p] * 100) / 100;
+                        if (bal < -0.01) debtors.push({ name: p, amount: -bal });
+                        else if (bal > 0.01) creditors.push({ name: p, amount: bal });
+                    }
+
+                    let debts = [];
+                    let i = 0, j = 0;
+
+                    while (i < debtors.length && j < creditors.length) {
+                        let debtor = debtors[i];
+                        let creditor = creditors[j];
+                        let amt = Math.min(debtor.amount, creditor.amount);
+                        amt = Math.round(amt * 100) / 100;
+
+                        debts.from = debtor.name;
+                        debts.to = creditor.name;
+                        debts.amount = amt;
+
+                        debts.push({ from: debtor.name, to: creditor.name, amount: amt });
+
+                        debtor.amount -= amt;
+                        creditor.amount -= amt;
+
+                        if (debtor.amount < 0.01) i++;
+                        if (creditor.amount < 0.01) j++;
+                    }
+
+                    this.calculatedDebts = debts;
+                },
+
+                copyPixInfo(amount, creditorName) {
+                    let pixKey = this.organizerPix || "Chave Pix não informada";
+                    let textToCopy = `Chave Pix (${creditorName}): ${pixKey} | Valor: R$ ${amount.toFixed(2)} (${this.eventName || 'Racha'})`;
+                    navigator.clipboard.writeText(textToCopy);
+                    alert(`Dados do Pix copiados com sucesso!\n\nCole no aplicativo do seu banco:\n${textToCopy}`);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
