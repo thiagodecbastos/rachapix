@@ -22,7 +22,7 @@
                 <h1 class="text-2xl font-bold flex items-center gap-2">
                     <i class="fa-solid fa-receipt"></i> Dividee
                 </h1>
-                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.0</span>
+                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.1</span>
             </div>
             <p class="text-emerald-100 text-sm mt-1">Divida contas de churrascos e viagens sem enrolação.</p>
         </header>
@@ -255,7 +255,7 @@
                 copyPixInfo(amount, creditorName) {
                     let creditor = this.participants.find(p => p.name === creditorName);
                     let pixKey = creditor && creditor.pix ? creditor.pix : 'Chave Pix não informada';
-                    let textToCopy = `Pix para ${creditorName}: ${pixKey} | Valor: R$ ${amount.toFixed(2)} (${this.eventName || 'Dividee'})`;
+                    let textToCopy = `Pix para ${creditorName}: ${pixKey} \vert{} Valor: R$ ${amount.toFixed(2)} (${this.eventName || 'Dividee'})`;
                     navigator.clipboard.writeText(textToCopy);
                     alert(`Dados copiados para ${creditorName}!\n\nCole no seu banco:\n${textToCopy}`);
                 },
@@ -272,18 +272,4 @@
                         this.calculatedDebts.forEach(d => {
                             let creditor = this.participants.find(p => p.name === d.to);
                             let pixKey = creditor && creditor.pix ? creditor.pix : 'Não informada';
-                            text += `\n• *${d.from}* deve *R$ ${d.amount.toFixed(2)}* para *${d.to}*\n`;
-                            text += `  📲 Pix (${d.to}): \`${pixKey}\`\n`;
-                        });
-                    } else {
-                        text += `Aceda ao link para ver os detalhes da divisão!`;
-                    }
-
-                    let encoded = encodeURIComponent(text);
-                    window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
-                }
-            }
-        }
-    </script>
-</body>
-</html>
+                            text += `\n• *${d.from}* deve *R$ ${d.
