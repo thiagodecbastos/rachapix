@@ -22,7 +22,7 @@
                 <h1 class="text-2xl font-bold flex items-center gap-2">
                     <i class="fa-solid fa-receipt"></i> RachaPix
                 </h1>
-                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v1.5</span>
+                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v1.6</span>
             </div>
             <p class="text-emerald-100 text-sm mt-1">Divida contas de churrascos e viagens sem enrolação.</p>
         </header>
@@ -130,9 +130,9 @@
             </section>
 
             <!-- Passo 5: Partilhar no WhatsApp -->
-            <section class="pt-2">
+            <section class="pt-2" x-show="calculatedDebts.length > 0">
                 <button @click="shareWhatsApp" class="w-full bg-emerald-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fa-brands fa-whatsapp text-lg"></i> Partilhar Resumo no WhatsApp
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Partilhar Acertos no WhatsApp
                 </button>
             </section>
 
@@ -254,7 +254,7 @@
 
                 copyPixInfo(amount, creditorName) {
                     let creditor = this.participants.find(p => p.name === creditorName);
-                    let pixKey = creditor && creditor.pix ? creditor.pix : 'Chave Pix não cadastrada por ' + creditorName;
+                    let pixKey = creditor && creditor.pix ? creditor.pix : 'Chave Pix não informada';
                     let textToCopy = `Pix para ${creditorName}: ${pixKey} | Valor: R$ ${amount.toFixed(2)} (${this.eventName || 'Racha'})`;
                     navigator.clipboard.writeText(textToCopy);
                     alert(`Dados copiados para ${creditorName}!\n\nCole no seu banco:\n${textToCopy}`);
@@ -263,17 +263,20 @@
                 shareWhatsApp() {
                     let eventTitle = this.eventName || 'Churrasco / Viagem';
                     let total = this.expenses.reduce((acc, curr) => acc + curr.amount, 0);
-                    let text = `*RachaPix: ${eventTitle}*\n\n`;
+                    let text = `🧾 *RachaPix: ${eventTitle}*\n\n`;
                     text += `👥 *Participantes:* ${this.participants.length}\n`;
                     text += `💵 *Total Gasto:* R$ ${total.toFixed(2)}\n\n`;
                     
                     if (this.calculatedDebts.length > 0) {
-                        text += `*Acertos:* \n`;
+                        text += `🔄 *Acertos para pagamento:*\n`;
                         this.calculatedDebts.forEach(d => {
-                            text += `- ${d.from} deve R$ ${d.amount.toFixed(2)} para ${d.to}\n`;
+                            let creditor = this.participants.find(p => p.name === d.to);
+                            let pixKey = creditor && creditor.pix ? creditor.pix : 'Não informada';
+                            text += `\n• *${d.from}* deve *R$ ${d.amount.toFixed(2)}* para *${d.to}*\n`;
+                            text += `  📲 Pix (${d.to}): \`${pixKey}\`\n`;
                         });
                     } else {
-                        text += `Aceda ao link para ver os detalhes da divisão e acertar os valores!`;
+                        text += `Aceda ao link para ver os detalhes da divisão!`;
                     }
 
                     let encoded = encodeURIComponent(text);
