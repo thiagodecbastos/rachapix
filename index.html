@@ -129,8 +129,8 @@
             let lines = [];
             lines.push(`🧾 *Dividee: ${eventTitle}*`);
             lines.push(``);
-            lines.push(`👥 *Participantes:* ${this.participants.length}`);
-            lines.push(`💵 *Total Gasto:* R$ ${total.toFixed(2)}`);
+            lines.push(`👥 Participantes: ${this.participants.length}`);
+            lines.push(`💵 Total Gasto: R$ ${total.toFixed(2)}`);
             lines.push(``);
             
             if (this.calculatedDebts.length > 0) {
@@ -140,7 +140,7 @@
                     let pixKey = creditor && creditor.pix ? creditor.pix : 'Não informada';
                     lines.push(``);
                     lines.push(`• *${d.from}* deve *R$ ${d.amount.toFixed(2)}* para *${d.to}*`);
-                    lines.push(`  📲 Pix (${d.to}): \`${pixKey}\``);
+                    lines.push(`  📲 Pix (${d.to}):${pixKey}`);
                 });
             } else {
                 lines.push(`Nenhum acerto pendente.`);
@@ -152,7 +152,7 @@
 
             let text = lines.join('\n');
             let encoded = encodeURIComponent(text);
-            window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+            window.open(`https://wa.me/?text=${encoded}`, '_blank');
         }
     }">
         
@@ -162,7 +162,7 @@
                 <h1 class="text-2xl font-bold flex items-center gap-2">
                     <i class="fa-solid fa-receipt"></i> Dividee
                 </h1>
-                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.7</span>
+                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.8</span>
             </div>
             <p class="text-emerald-100 text-sm mt-1">Divida contas de churrascos e viagens sem enrolação.</p>
         </header>
