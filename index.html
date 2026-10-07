@@ -126,28 +126,31 @@
             let eventTitle = this.eventName || 'Churrasco / Viagem';
             let total = this.expenses.reduce((acc, curr) => acc + curr.amount, 0);
             
-            let debtsText = '';
+            let lines = [];
+            lines.push(`🧾 *Dividee: ${eventTitle}*`);
+            lines.push(``);
+            lines.push(`👥 *Participantes:* ${this.participants.length}`);
+            lines.push(`💵 *Total Gasto:* R$ ${total.toFixed(2)}`);
+            lines.push(``);
+            
             if (this.calculatedDebts.length > 0) {
-                debtsText = '🔄 *Acertos para pagamento:*';
+                lines.push(`🔄 *Acertos para pagamento:*`);
                 this.calculatedDebts.forEach(d => {
                     let creditor = this.participants.find(p => p.name === d.to);
                     let pixKey = creditor && creditor.pix ? creditor.pix : 'Não informada';
-                    debtsText += `\n\n• *${d.from}* deve *R$ ${d.amount.toFixed(2)}* para *${d.to}*\n  📲 Pix (${d.to}): \`${pixKey}\``;
+                    lines.push(``);
+                    lines.push(`• *${d.from}* deve *R$ ${d.amount.toFixed(2)}* para *${d.to}*`);
+                    lines.push(`  📲 Pix (${d.to}): \`${pixKey}\``);
                 });
             } else {
-                debtsText = 'Nenhum acerto pendente.';
+                lines.push(`Nenhum acerto pendente.`);
             }
 
-            let text = `🧾 *Dividee: ${eventTitle}*
+            lines.push(``);
+            lines.push(`*Organizado gratuitamente com o Dividee* 🚀`);
+            lines.push(`https://dividee.com.br`);
 
-👥 *Participantes:* ${this.participants.length}
-💵 *Total Gasto:* R$ ${total.toFixed(2)}
-
-${debtsText}
-
-*Organizado gratuitamente com o Dividee* 🚀
-https://dividee.com.br`;
-
+            let text = lines.join('\n');
             let encoded = encodeURIComponent(text);
             window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
         }
@@ -159,7 +162,7 @@ https://dividee.com.br`;
                 <h1 class="text-2xl font-bold flex items-center gap-2">
                     <i class="fa-solid fa-receipt"></i> Dividee
                 </h1>
-                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.6</span>
+                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.7</span>
             </div>
             <p class="text-emerald-100 text-sm mt-1">Divida contas de churrascos e viagens sem enrolação.</p>
         </header>
