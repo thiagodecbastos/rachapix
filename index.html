@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RachaPix - Divisão de Despesas Simples</title>
+    <title>Dividee - Divisão de Despesas Simples</title>
     
     <!-- Script de Verificação do Google AdSense -->
     <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-O_SEU_ID_AQUI" crossorigin="anonymous"></script> -->
@@ -20,9 +20,9 @@
         <header class="bg-emerald-600 text-white p-6 shadow-md">
             <div class="flex justify-between items-center">
                 <h1 class="text-2xl font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-receipt"></i> RachaPix
+                    <i class="fa-solid fa-receipt"></i> Dividee
                 </h1>
-                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v1.6</span>
+                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.0</span>
             </div>
             <p class="text-emerald-100 text-sm mt-1">Divida contas de churrascos e viagens sem enrolação.</p>
         </header>
@@ -140,7 +140,7 @@
 
         <!-- Rodapé com Links Legais -->
         <footer class="bg-slate-100 text-center py-4 text-xs text-slate-500 border-t border-slate-200 space-y-1">
-            <p>RachaPix — Simples, rápido e direto ao ponto.</p>
+            <p>Dividee — Simples, rápido e direto ao ponto.</p>
             <div class="space-x-2">
                 <a href="termos.html" class="underline hover:text-slate-700">Termos de Uso</a>
                 <span>•</span>
@@ -255,7 +255,7 @@
                 copyPixInfo(amount, creditorName) {
                     let creditor = this.participants.find(p => p.name === creditorName);
                     let pixKey = creditor && creditor.pix ? creditor.pix : 'Chave Pix não informada';
-                    let textToCopy = `Pix para ${creditorName}: ${pixKey} | Valor: R$ ${amount.toFixed(2)} (${this.eventName || 'Racha'})`;
+                    let textToCopy = `Pix para ${creditorName}: ${pixKey} | Valor: R$ ${amount.toFixed(2)} (${this.eventName || 'Dividee'})`;
                     navigator.clipboard.writeText(textToCopy);
                     alert(`Dados copiados para ${creditorName}!\n\nCole no seu banco:\n${textToCopy}`);
                 },
@@ -263,7 +263,7 @@
                 shareWhatsApp() {
                     let eventTitle = this.eventName || 'Churrasco / Viagem';
                     let total = this.expenses.reduce((acc, curr) => acc + curr.amount, 0);
-                    let text = `🧾 *RachaPix: ${eventTitle}*\n\n`;
+                    let text = `🧾 *Dividee: ${eventTitle}*\n\n`;
                     text += `👥 *Participantes:* ${this.participants.length}\n`;
                     text += `💵 *Total Gasto:* R$ ${total.toFixed(2)}\n\n`;
                     
