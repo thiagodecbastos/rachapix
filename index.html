@@ -22,7 +22,7 @@
                 <h1 class="text-2xl font-bold flex items-center gap-2">
                     <i class="fa-solid fa-receipt"></i> Dividee
                 </h1>
-                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.2</span>
+                <span class="text-xs bg-emerald-700 px-2 py-1 rounded-full font-medium">v2.3</span>
             </div>
             <p class="text-emerald-100 text-sm mt-1">Divida contas de churrascos e viagens sem enrolação.</p>
         </header>
@@ -42,11 +42,12 @@
             <!-- Passo 2: Participantes e Chaves Pix -->
             <section class="space-y-3">
                 <h2 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">2. Participantes (<span x-text="participants.length"></span>)</h2>
-                <div class="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <input type="text" x-model="newParticipantName" @keyup.enter.prevent="addParticipant" placeholder="Nome do participante (Ex: João)" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white mb-2">
-                    <input type="text" x-model="newParticipantPix" @keyup.enter.prevent="addParticipant" placeholder="Chave Pix (CPF, Celular ou E-mail)" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white mb-3">
-                    <button type="button" @click="addParticipant" class="w-full bg-slate-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition">Adicionar ao Grupo</button>
-                </div>
+                
+                <form @submit.prevent="addParticipant" class="space-y-2 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <input type="text" x-model="newParticipantName" placeholder="Nome do participante (Ex: João)" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white mb-2">
+                    <input type="text" x-model="newParticipantPix" placeholder="Chave Pix (CPF, Celular ou E-mail)" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white mb-3">
+                    <button type="submit" class="w-full bg-slate-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition">Adicionar ao Grupo</button>
+                </form>
 
                 <div class="space-y-2 mt-2">
                     <template x-for="(p, index) in participants" :key="index">
@@ -151,4 +152,141 @@
     </div>
 
     <script>
-        function rachaApp() {
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('rachaApp', () => ({
+                eventName: '',
+                newParticipantName: '',
+                newParticipantPix: '',
+                participants: [],
+                expenseDesc: '',
+                expenseAmount: '',
+                expensePayer: '',
+                expenses: [],
+                calculatedDebts: [],
+
+                addParticipant() {
+                    if (this.newParticipantName && this.newParticipantName.trim() !== '') {
+                        let name = this.newParticipantName.trim();
+                        if (!this.participants.some(p => p.name === name)) {
+                            this.participants.push({
+                                name: name,
+                                pix: this.newParticipantPix ? this.newParticipantPix.trim() : ''
+                            });
+                            this.newParticipantName = '';
+                            this.newParticipantPix = '';
+                        }
+                    }
+                },
+
+                removeParticipant(index) {
+                    this.participants.splice(index, 1);
+                    this.calculatedDebts = [];
+                },
+
+                addExpense() {
+                    if (this.expenseDesc && this.expenseAmount > 0 && this.expensePayer) {
+                        this.expenses.push({
+                            desc: this.expenseDesc,
+                            amount: parseFloat(this.expenseAmount),
+                            payer: this.expensePayer
+                        });
+                        this.expenseDesc = '';
+                        this.expenseAmount = '';
+                        this.expensePayer = '';
+                        this.calculateDebts();
+                    }
+                },
+
+                removeExpense(index) {
+                    this.expenses.splice(index, 1);
+                    this.calculateDebts();
+                },
+
+                calculateDebts() {
+                    if (this.participants.length === 0 || this.expenses.length === 0) {
+                        this.calculatedDebts = [];
+                        return;
+                    }
+
+                    let balances = {};
+                    this.participants.forEach(p => balances[p.name] = 0);
+
+                    let totalSpent = 0;
+                    this.expenses.forEach(exp => {
+                        totalSpent += exp.amount;
+                        balances[exp.payer] += exp.amount;
+                    });
+
+                    let sharePerPerson = totalSpent / this.participants.length;
+
+                    this.participants.forEach(p => {
+                        balances[p.name] -= sharePerPerson;
+                    });
+
+                    let debtors = [];
+                    let creditors = [];
+
+                    for (let p in balances) {
+                        let bal = Math.round(balances[p] * 100) / 100;
+                        if (bal < -0.01) debtors.push({ name: p, amount: -bal });
+                        else if (bal > 0.01) creditors.push({ name: p, amount: bal });
+                    }
+
+                    let debts = [];
+                    let i = 0, j = 0;
+
+                    while (i < debtors.length && j < creditors.length) {
+                        let debtor = debtors[i];
+                        let creditor = creditors[j];
+                        let amt = Math.min(debtor.amount, creditor.amount);
+                        amt = Math.round(amt * 100) / 100;
+
+                        debts.push({ from: debtor.name, to: creditor.name, amount: amt });
+
+                        debtor.amount -= amt;
+                        creditor.amount -= amt;
+
+                        if (debtor.amount < 0.01) i++;
+                        if (creditor.amount < 0.01) j++;
+                    }
+
+                    this.calculatedDebts = debts;
+                },
+
+                copyPixInfo(amount, creditorName) {
+                    let creditor = this.participants.find(p => p.name === creditorName);
+                    let pixKey = creditor && creditor.pix ? creditor.pix : 'Chave Pix não informada';
+                    let textToCopy = `Pix para ${creditorName}: ${pixKey} | Valor: R$ ${amount.toFixed(2)} (${this.eventName || 'Dividee'})`;
+                    navigator.clipboard.writeText(textToCopy);
+                    alert(`Dados copiados para ${creditorName}!\n\nCole no seu banco:\n${textToCopy}`);
+                },
+
+                shareWhatsApp() {
+                    let eventTitle = this.eventName || 'Churrasco / Viagem';
+                    let total = this.expenses.reduce((acc, curr) => acc + curr.amount, 0);
+                    let text = `🧾 *Dividee: ${eventTitle}*\n\n`;
+                    text += `👥 *Participantes:* ${this.participants.length}\n`;
+                    text += `💵 *Total Gasto:* R$ ${total.toFixed(2)}\n\n`;
+                    
+                    if (this.calculatedDebts.length > 0) {
+                        text += `🔄 *Acertos para pagamento:*\n`;
+                        this.calculatedDebts.forEach(d => {
+                            let creditor = this.participants.find(p => p.name === d.to);
+                            let pixKey = creditor && creditor.pix ? creditor.pix : 'Não informada';
+                            text += `\n• *${d.from}* deve *R$ ${d.amount.toFixed(2)}* para *${d.to}*\n`;
+                            text += `  📲 Pix (${d.to}): \`${pixKey}\`\n`;
+                        });
+                    } else {
+                        text += `Aceda ao link para ver os detalhes da divisão!\n`;
+                    }
+
+                    text += `\n*Organizado gratuitamente com o Dividee* 🚀\nhttps://dividee.com.br`;
+
+                    let encoded = encodeURIComponent(text);
+                    window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
