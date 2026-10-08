@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dividee - Dividir Contas, Churrascos e Despesas em Grupo via Pix</title>
     
-    <!-- Script de Verificação do Google AdSense -->
-    <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-O_SEU_ID_AQUI" crossorigin="anonymous"></script> -->
+    <!-- Script de Verificação Oficial do Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4447218246982102" crossorigin="anonymous"></script>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -190,123 +190,4 @@
 
                 <div class="space-y-2 mt-2">
                     <template x-for="(p, index) in participants" :key="index">
-                        <div class="bg-emerald-50 text-emerald-900 text-xs p-3 rounded-xl border border-emerald-200 flex justify-between items-center">
-                            <div>
-                                <p class="font-bold text-sm" x-text="p.name"></p>
-                                <p class="text-slate-500 text-xs">Pix: <span x-text="p.pix || 'Não informada'"></span></p>
-                            </div>
-                            <button type="button" @click="removeParticipant(index)" class="text-red-500 hover:text-red-700 p-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
-                        </div>
-                    </template>
-                </div>
-            </section>
-
-            <!-- Passo 3: Lançar Despesas -->
-            <section class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200" x-show="participants.length > 0">
-                <h2 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">3. Lançar Gastos</h2>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Descrição do Gasto</label>
-                    <input type="text" x-model="expenseDesc" placeholder="Ex: Supermercado / Combustível" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Valor (R$)</label>
-                        <input type="number" step="0.01" x-model.number="expenseAmount" placeholder="0,00" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-600 mb-1">Quem pagou?</label>
-                        <select x-model="expensePayer" class="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
-                            <option value="">Selecione...</option>
-                            <template x-for="p in participants">
-                                <option :value="p.name" x-text="p.name"></option>
-                            </template>
-                        </select>
-                    </div>
-                </div>
-                <button type="button" @click="addExpense" class="w-full bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition shadow-sm">
-                    Adicionar Despesa
-                </button>
-            </section>
-
-            <!-- Lista de Despesas Lançadas -->
-            <section class="space-y-2" x-show="expenses.length > 0">
-                <h2 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">Extrato de Gastos</h2>
-                <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    <template x-for="(exp, index) in expenses" :key="index">
-                        <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-100 shadow-xs text-sm">
-                            <div>
-                                <p class="font-medium text-slate-800" x-text="exp.desc"></p>
-                                <p class="text-xs text-slate-500">Pago por <span class="font-semibold text-emerald-600" x-text="exp.payer"></span></p>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-slate-700">R$ <span x-text="exp.amount.toFixed(2)"></span></span>
-                                <button type="button" @click="removeExpense(index)" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </section>
-
-            <!-- Passo 4: Acerto de Contas (Resultado) -->
-            <section class="space-y-3 pt-2 border-t border-slate-200" x-show="expenses.length > 0">
-                <div class="flex justify-between items-center">
-                    <h2 class="font-bold text-slate-800 text-base">4. Acerto via Pix</h2>
-                    <button type="button" @click="calculateDebts" class="bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-slate-800 transition">Calcular Divisão</button>
-                </div>
-
-                <div class="space-y-3">
-                    <template x-for="debt in calculatedDebts">
-                        <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex flex-col gap-2">
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="text-slate-700"><strong x-text="debt.from"></strong> deve para <strong x-text="debt.to"></strong></span>
-                                <span class="font-bold text-emerald-700 text-base">R$ <span x-text="debt.amount.toFixed(2)"></span></span>
-                            </div>
-                            <button type="button" @click="copyPixInfo(debt.amount, debt.to)" class="w-full bg-emerald-600 text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-qrcode"></i> Copiar Chave Pix de <span x-text="debt.to"></span> e Valor
-                            </button>
-                        </div>
-                    </template>
-                </div>
-            </section>
-
-            <!-- Passo 5: Partilhar no WhatsApp -->
-            <section class="pt-2" x-show="calculatedDebts.length > 0">
-                <button type="button" @click="shareWhatsApp" class="w-full bg-emerald-600 text-white py-3 rounded-xl text-sm font-bold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fa-brands fa-whatsapp text-lg"></i> Partilhar Acertos no WhatsApp
-                </button>
-            </section>
-
-            <!-- Conteúdo Textual Explicativo para SEO e Google AdSense -->
-            <section class="mt-8 pt-6 border-t border-slate-200 space-y-4 text-slate-600 text-xs leading-relaxed">
-                <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Como funciona o Dividee?</h3>
-                <p>
-                    O <strong>Dividee</strong> é a ferramenta online e gratuita ideal para <strong>rachar contas</strong>, dividir despesas de viagens, churrascos, festas e rolês com a galera sem dor de cabeça. Esqueça a calculadora do celular e as planilhas complicadas: nossa plataforma calcula automaticamente quem deve quanto para quem em segundos.
-                </p>
-                <h4 class="font-semibold text-slate-700 pt-1">Perfeito para qualquer ocasião em grupo:</h4>
-                <ul class="list-disc pl-4 space-y-1">
-                    <li><strong>Viagens de fim de semana e feriados:</strong> Divida hospedagem, gasolina, pedágios e compras de supermercado com facilidade.</li>
-                    <li><strong>Churrascos e aniversários:</strong> Calcule o rateio da carne, bebidas, gelo e carvão proporcionalmente entre os participantes.</li>
-                    <li><strong>Repúblicas e despesas da casa:</strong> Organize contas de luz, água, internet e compras mensais de forma justa.</li>
-                </ul>
-                <h4 class="font-semibold text-slate-700 pt-1">Vantagens de usar o Dividee:</h4>
-                <p>
-                    Não precisa baixar nenhum aplicativo na Google Play Store ou App Store. Tudo funciona direto no navegador do seu smartphone ou computador. Além disso, o sistema gera um resumo completo pronto para ser partilhado no <strong>WhatsApp</strong>, contendo o extrato dos gastos e as chaves Pix dos credores para cópia rápida com um clique.
-                </p>
-            </section>
-
-        </main>
-
-        <!-- Rodapé com Links Legais -->
-        <footer class="bg-slate-100 text-center py-4 text-xs text-slate-500 border-t border-slate-200 space-y-1">
-            <p>Dividee — Simples, rápido e direto ao ponto.</p>
-            <div class="space-x-2">
-                <a href="termos.html" class="underline hover:text-slate-700">Termos de Uso</a>
-                <span>•</span>
-                <a href="privacidade.html" class="underline hover:text-slate-700">Política de Privacidade</a>
-            </div>
-        </footer>
-
-    </div>
-
-</body>
-</html>
+                        <div class="bg
